@@ -1,0 +1,49 @@
+# Entornos Virtuales
+venv/
+env/
+.venv/
+.env/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos de Desarrollo
+.vscode/
+.idea/
+*.swp
+*.swo# Datos y Logs
+*.log
+data/raw/
+data/processed/
+*.csv
+*.parquet
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Archivos de Sistema
+.DS_Store
+Thumbs.db
+
+# Configuraciones de Spark y Hadoop
+spark-warehouse/
+metastore_db/
+
+# Archivos de Configuración
+config.ini
+*.yaml
+*.yml# Compilados
+*.class
+*.jar
+*.war
+
+# Archivos de Dependencias
+*.egg-info/
+dist/
+build/
+
+# Archivos de Seguridad
+*.pem
+*.key

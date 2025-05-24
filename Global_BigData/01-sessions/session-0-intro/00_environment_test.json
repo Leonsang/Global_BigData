@@ -1,0 +1,232 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 🚀 SESIÓN 0: INTRODUCCIÓN AL ENTORNO\n",
+    "## Verificación del Entorno Big Data\n",
+    "\n",
+    "### 🎯 **OBJETIVO**\n",
+    "Verificar la correcta configuración del entorno de desarrollo para Big Data y sus componentes\n",
+    "\n",
+    "### 📋 **CONTENIDO**\n",
+    "- Verificación de Docker y contenedores\n",
+    "- Pruebas de conectividad HDFS\n",
+    "- Verificación de servicios básicos"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "source": [
+    "# 🔧 CONFIGURACIÓN INICIAL\n",
+    "import subprocess\n",
+    "import json\n",
+    "import requests\n",
+    "from hdfs import InsecureClient\n",
+    "\n",
+    "print(\"🔍 VERIFICANDO ENTORNO\")\n",
+    "print(\"=====================\")\n",
+    "\n",
+    "# Verificar Docker\n",
+    "try:\n",
+    "    result = subprocess.run(['docker', 'ps'], capture_output=True, text=True)\n",
+    "    if result.returncode == 0:\n",
+    "        print(\"✅ Docker está funcionando\")\n",
+    "        print(\"📋 Contenedores activos:\")\n",
+    "        print(result.stdout)\n",
+    "    else:\n",
+    "        print(\"❌ Error con Docker\")\n",
+    "        print(result.stderr)\n",
+    "except Exception as e:\n",
+    "    print(f\"❌ Error verificando Docker: {e}\")\n",
+    "\n",
+    "print(\"\\n✅ Verificación de Docker completada\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 📊 EJERCICIO 1: Verificación de HDFS\n",
+    "\n",
+    "Verificaremos la correcta configuración y funcionamiento de HDFS"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "source": [
+    "# 1.1 Verificar estado de HDFS\n",
+    "print(\"🏥 VERIFICANDO ESTADO DE HDFS\")\n",
+    "print(\"===========================\")\n",
+    "\n",
+    "try:\n",
+    "    # Verificar NameNode\n",
+    "    result = subprocess.run(['hdfs', 'dfsadmin', '-report'], \n",
+    "                          capture_output=True, text=True, timeout=30)\n",
+    "    \n",
+    "    if result.returncode == 0:\n",
+    "        print(\"✅ NameNode está funcionando\")\n",
+    "        print(\"📋 Reporte del cluster:\")\n",
+    "        print(result.stdout)\n",
+    "    else:\n",
+    "        print(\"❌ Error con NameNode\")\n",
+    "        print(result.stderr)\n",
+    "        \n",
+    "except Exception as e:\n",
+    "    print(f\"❌ Error verificando HDFS: {e}\")\n",
+    "\n",
+    "print(\"\\n✅ Verificación de HDFS completada\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "source": [
+    "# 1.2 Probar operaciones básicas de HDFS\n",
+    "print(\"📁 PROBANDO OPERACIONES HDFS\")\n",
+    "print(\"=========================\")\n",
+    "\n",
+    "try:\n",
+    "    # Conectar a HDFS\n",
+    "    hdfs_client = InsecureClient('http://namenode:9870')\n",
+    "    \n",
+    "    # Crear directorio de prueba\n",
+    "    test_dir = '/test_env'\n",
+    "    hdfs_client.makedirs(test_dir)\n",
+    "    print(f\"✅ Directorio {test_dir} creado\")\n",
+    "    \n",
+    "    # Listar directorio raíz\n",
+    "    root_contents = hdfs_client.list('/')\n",
+    "    print(\"\\n📋 Contenido del directorio raíz:\")\n",
+    "    for item in root_contents:\n",
+    "        print(f\"  - {item}\")\n",
+    "    \n",
+    "except Exception as e:\n",
+    "    print(f\"❌ Error en operaciones HDFS: {e}\")\n",
+    "\n",
+    "print(\"\\n✅ Pruebas de HDFS completadas\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 📊 EJERCICIO 2: Verificación de Servicios\n",
+    "\n",
+    "Verificaremos el estado de los servicios básicos del entorno"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "source": [
+    "# 2.1 Verificar servicios web\n",
+    "print(\"🌐 VERIFICANDO SERVICIOS WEB\")\n",
+    "print(\"=========================\")\n",
+    "\n",
+    "services = {\n",
+    "    'NameNode UI': 'http://localhost:9870',\n",
+    "    'DataNode UI': 'http://localhost:9864',\n",
+    "    'Jupyter Lab': 'http://localhost:8888'\n",
+    "}\n",
+    "\n",
+    "for service, url in services.items():\n",
+    "    try:\n",
+    "        response = requests.get(url, timeout=5)\n",
+    "        if response.status_code == 200:\n",
+    "            print(f\"✅ {service} está funcionando\")\n",
+    "        else:\n",
+    "            print(f\"⚠️ {service} respondió con código {response.status_code}\")\n",
+    "    except Exception as e:\n",
+    "        print(f\"❌ Error con {service}: {e}\")\n",
+    "\n",
+    "print(\"\\n✅ Verificación de servicios completada\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "source": [
+    "# 2.2 Verificar logs de servicios\n",
+    "print(\"📝 VERIFICANDO LOGS DE SERVICIOS\")\n",
+    "print(\"===========================\")\n",
+    "\n",
+    "try:\n",
+    "    # Verificar logs de NameNode\n",
+    "    result = subprocess.run(['docker', 'logs', 'namenode'], \n",
+    "                          capture_output=True, text=True, timeout=10)\n",
+    "    \n",
+    "    if result.returncode == 0:\n",
+    "        print(\"✅ Logs de NameNode accesibles\")\n",
+    "        print(\"📋 Últimas líneas de log:\")\n",
+    "        print(result.stdout.split('\\n')[-5:])  # Mostrar últimas 5 líneas\n",
+    "    else:\n",
+    "        print(\"❌ Error accediendo a logs\")\n",
+    "        print(result.stderr)\n",
+    "        \n",
+    "except Exception as e:\n",
+    "    print(f\"❌ Error verificando logs: {e}\")\n",
+    "\n",
+    "print(\"\\n✅ Verificación de logs completada\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 📝 LIMPIEZA FINAL\n",
+    "\n",
+    "Limpiaremos los recursos de prueba"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "source": [
+    "# Limpiar recursos\n",
+    "print(\"🧹 LIMPIANDO RECURSOS\")\n",
+    "print(\"===================\")\n",
+    "\n",
+    "try:\n",
+    "    # Eliminar directorio de prueba en HDFS\n",
+    "    hdfs_client.delete(test_dir, recursive=True)\n",
+    "    print(f\"✅ Directorio {test_dir} eliminado de HDFS\")\n",
+    "    \n",
+    "except Exception as e:\n",
+    "    print(f\"❌ Error en limpieza: {e}\")\n",
+    "\n",
+    "print(\"\\n✅ Limpieza completada\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+} 

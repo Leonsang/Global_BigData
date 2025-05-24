@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # Spark Master
+  spark-master:
+    image: bitnami/spark:3.3.2
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_MASTER_HOST=spark-master
+    ports:
+      - "8080:8080"  # Spark UI
+      - "7077:7077"  # Spark Master
+    volumes:
+      - ./spark/logs:/opt/bitnami/spark/logs
+    networks:
+      - bigdata-network
+
+  # Spark Workers (2 instancias)
+  spark-worker-1:
+    image: bitnami/spark:3.3.2
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+    depends_on:
+      - spark-master
+    networks:
+      - bigdata-network
+
+  spark-worker-2:
+    image: bitnami/spark:3.3.2
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+    depends_on:
+      - spark-master
+    networks:
+      - bigdata-network
+
+  # HDFS NameNode
+  hdfs-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CLUSTER_NAME=transport_data_cluster
+    ports:
+      - "9870:9870"  # HDFS UI
+      - "9000:9000"  # HDFS NameNode
+    volumes:
+      - ./hdfs/namenode:/hadoop/dfs/name
+    networks:
+      - bigdata-network
+
+  # HDFS DataNodes (2 instancias)
+  hdfs-datanode-1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
+      - CORE_CONF_hadoop_http_staticuser_user=root
+    depends_on:
+      - hdfs-namenode
+    volumes:
+      - ./hdfs/datanode1:/hadoop/dfs/data
+    networks:
+      - bigdata-network
+
+  hdfs-datanode-2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
+      - CORE_CONF_hadoop_http_staticuser_user=root
+    depends_on:
+      - hdfs-namenode
+    volumes:
+      - ./hdfs/datanode2:/hadoop/dfs/data
+    networks:
+      - bigdata-network
+
+  # Kafka y Zookeeper
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - bigdata-network
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "transport_data:1:1"
+    depends_on:
+      - zookeeper
+    networks:
+      - bigdata-network
+
+  # Jupyter Notebook
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info"
+    volumes:
+      - ../:/home/jovyan/work
+    depends_on:
+      - spark-master
+      - hdfs-namenode
+    networks:
+      - bigdata-network
+
+networks:
+  bigdata-network:
+    driver: bridge
+
+volumes:
+  hdfs-namenode:
+  hdfs-datanode1:
+  hdfs-datanode2:
+  spark-logs:

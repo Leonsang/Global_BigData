@@ -1,0 +1,28 @@
+# Requisitos para el Proyecto de Big Data
+
+# Procesamiento de Datos
+pyspark==3.3.2
+hadoop==3.3.4
+kafka-python==2.0.2
+pyarrow==10.0.1
+
+# Análisis de Datos
+pandas==1.5.3
+numpy==1.24.2
+scipy==1.10.1
+
+# Machine Learning
+scikit-learn==1.2.2
+
+# Visualización
+matplotlib==3.7.1
+seaborn==0.12.2
+
+# Utilidades
+jupyter==1.0.0
+notebook==6.5.3
+
+# Desarrollo
+pytest==7.2.2
+black==23.3.0
+flake8==6.0.0
